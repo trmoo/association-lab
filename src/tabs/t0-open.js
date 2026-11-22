@@ -1,10 +1,10 @@
 /*! 연관 분석 실험실 — © 2026 티쳐무 · 모든 권리 보유 */
 // 탭 1 생각 열기 — 추천의 비밀 · 연관 분석이란? · 어디에 쓰일까? · 연관 규칙의 표현
-import { h, 채우기, 알림, 서술칸, 다듬기, 대화상자, 을, 이 } from '../lib/ui.js';
+import { h, 채우기, 알림, 서술칸, 다듬기, 대화상자, 을 } from '../lib/ui.js';
 import { 기록 } from '../lib/store.js';
 import { 추천, 세기, 수글 } from '../lib/assoc.js';
 import { 영수증들 } from '../lib/views.js';
-import { 쇼핑몰, 그림, 궁금증, 정의빈칸, 사례, 규칙칩, 규칙문장 as 문장문제, 서술, 힌트글자 } from '../data.js';
+import { 쇼핑몰, 그림, 궁금증, 정의빈칸, 사례, 규칙문장 as 문장문제, 서술, 힌트글자 } from '../data.js';
 
 const 퍼센트 = v => Math.round(v * 100) + '%';
 const 칩글 = x => (그림[x] ? 그림[x] + ' ' : '') + x;
@@ -244,41 +244,11 @@ function 활용사례(el, 수명, 도구) {
 
 // ───────────────────────── 4. 연관 규칙의 표현 ─────────────────────────
 function 규칙표현(el, 수명, 도구) {
-  const 상태 = 기록.get('표현', { 만든: [], 바꿈: false, 문제: [null, null, null], 방향: null });
+  const 상태 = 기록.get('표현', { 문제: [null, null, null], 방향: null });
   const 저장 = () => 기록.set('표현', 상태);
   const 끝확인 = () => {
-    if (상태.만든.length >= 3 && 상태.바꿈 && 상태.문제.every((v, i) => v === 문장문제[i].A) && 상태.방향 === 1) 도구.완료();
+    if (상태.문제.every((v, i) => v === 문장문제[i].A) && 상태.방향 === 1) 도구.완료();
   };
-  let A = null, B = null;
-  const 칩줄 = h('div', { class: 'row', style: { gap: '5px' } });
-  const 슬롯 = h('div', { class: 'row nw', style: { justifyContent: 'center', fontSize: '19px', gap: '8px' } });
-  const 문장 = h('div', { class: 'big-eq', style: { minHeight: '44px' } });
-  const 만든칸 = h('div', { class: 'muted', style: { fontSize: '14px' } });
-  const 맨글 = x => x.replace(/^\S+\s/, '');
-  function 그리기() {
-    채우기(칩줄, 규칙칩.map(x => h('button', {
-      class: 'chip' + (A === x ? ' a' : B === x ? ' b' : ''),
-      onClick: () => {
-        if (A === x) A = null; else if (B === x) B = null;
-        else if (!A) A = x; else if (!B) B = x; else B = x;
-        새규칙(); 그리기();
-      },
-    }, x)));
-    채우기(슬롯,
-      h('span', { class: 'chip a', style: { fontSize: '17px' } }, A || 'A (선행) ?'),
-      h('b', null, '→'),
-      h('span', { class: 'chip b', style: { fontSize: '17px' } }, B || 'B (후행) ?'),
-      h('button', { class: 'btn sm', disabled: !(A && B), onClick: () => { [A, B] = [B, A]; 상태.바꿈 = true; 새규칙(); 그리기(); } }, '⇄ 방향 바꾸기'));
-    if (A && B) {
-      const a = 맨글(A), b = 맨글(B);
-      채우기(문장, h('div', null, '만약 ', h('em', { class: 'a' }, a), 을(a).slice(a.length), ' 구매했다면, ', h('em', { class: 'b' }, b), '도 구매할 가능성이 높다.'),
-        h('div', { class: 'muted', style: { fontWeight: 600 } }, `if ${a} then ${b}   ·   {${a}} → {${b}}`));
-    } else 채우기(문장, h('span', { class: 'muted' }, '아래 상품 칩에서 A(먼저 산 것)와 B(함께 산 것)를 차례로 누르세요.'));
-    채우기(만든칸, 상태.만든.length ? `내가 만든 규칙 ${상태.만든.length}개: ` + 상태.만든.slice(-5).map(([a, b]) => `${맨글(a)} → ${맨글(b)}`).join(' · ') : '아직 만든 규칙이 없어요. (3개 이상 + 방향 바꾸기 한 번)');
-  }
-  function 새규칙() {
-    if (A && B && !상태.만든.some(([a, b]) => a === A && b === B)) { 상태.만든.push([A, B]); 저장(); 끝확인(); }
-  }
 
   // 문장 속 선행(A) 찾기
   const 문제칸 = h('div', { class: 'col', style: { gap: '6px' } });
@@ -309,24 +279,20 @@ function 규칙표현(el, 수명, 도구) {
         h('tr', null, h('th', { style: { width: '80px' } }, '표현'), h('td', { class: 'l' }, h('b', { class: 'ta' }, '(A 상품)'), ' → ', h('b', { class: 'tb' }, '(B 상품)'), h('span', { class: 'muted' }, '   A = 선행(조건) · B = 후행(결과)'))),
         h('tr', null, h('th', null, '해석'), h('td', { class: 'l' }, h('b', null, 'if A then B'), ' — 만약 A 를 구매했다면, B 도 구매할 가능성이 높다.')),
         h('tr', null, h('th', null, '예시'), h('td', { class: 'l small' }, '음료를 구매하는 고객은 과자를 함께 구매한다. / 삼겹살을 구매하는 고객은 상추를 함께 구매한다.'))),
-      h('div', { class: 'panel fill' },
-        h('h3', null, '🔧 규칙 만들기'),
-        슬롯, 문장, 칩줄, 만든칸,
-        h('div', { class: 'tip', style: { marginTop: 'auto' } }, '💡 A 와 B 자리에는 상품 여러 개(집합)가 올 수도 있어요. 예) ', h('b', null, '{오렌지 주스, 식기세제} → {윈도우 클리너}')))),
-    h('div', { class: 'col', style: { flex: 1 } },
-      h('div', { class: 'panel' }, h('h3', null, '🔍 문장에서 A(선행)를 찾아 누르세요'), 문제칸),
-      h('div', { class: 'panel' },
-        h('h3', null, '⇄ 방향을 바꾸면?'),
-        h('p', { class: 'small', style: { margin: '4px 0' } }, '「휴대폰 → 휴대폰 케이스」 와 「휴대폰 케이스 → 휴대폰」 은 같은 뜻일까요?'),
-        방향칸, 방향피드백),
       h('div', { class: 'panel' },
         h('h3', null, '📌 선행과 후행'),
         h('table', { class: 'grid', style: { width: '100%', fontSize: '14.5px', marginTop: '4px' } },
           h('tr', null, h('th', null, '연관 규칙'), h('th', { class: 'l' }, '해석')),
           h('tr', null, h('td', null, h('b', { class: 'ta' }, '햄버거'), ' → ', h('b', { class: 'tb' }, '콜라')), h('td', { class: 'l' }, '햄버거를 산 손님은 콜라를 함께 살 가능성이 높다.')),
           h('tr', null, h('td', null, h('b', { class: 'ta' }, '콜라'), ' → ', h('b', { class: 'tb' }, '햄버거')), h('td', { class: 'l' }, '콜라를 산 손님은 햄버거를 함께 살 가능성이 높다.'))),
-        h('div', { class: 'muted', style: { marginTop: '4px' } }, '화살표 앞(파랑)이 ', h('b', { class: 'ta' }, '선행'), ', 뒤(주황)가 ', h('b', { class: 'tb' }, '후행'), '이에요. 같은 두 상품이라도 선행과 후행이 바뀌면 다른 규칙이에요.')))));
-  그리기(); 문제그리기();
+        h('div', { class: 'muted', style: { marginTop: '4px' } }, '화살표 앞(파랑)이 ', h('b', { class: 'ta' }, '선행'), ', 뒤(주황)가 ', h('b', { class: 'tb' }, '후행'), '이에요. 같은 두 상품이라도 선행과 후행이 바뀌면 다른 규칙이에요.'))),
+    h('div', { class: 'col', style: { flex: 1 } },
+      h('div', { class: 'panel' }, h('h3', null, '🔍 문장에서 A(선행)를 찾아 누르세요'), 문제칸),
+      h('div', { class: 'panel' },
+        h('h3', null, '⇄ 방향을 바꾸면?'),
+        h('p', { class: 'small', style: { margin: '4px 0' } }, '「휴대폰 → 휴대폰 케이스」 와 「휴대폰 케이스 → 휴대폰」 은 같은 뜻일까요?'),
+        방향칸, 방향피드백))));
+  문제그리기();
 }
 
 export default {
