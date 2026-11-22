@@ -252,6 +252,15 @@ table.grid td.l, table.grid th.l { text-align: left; }
 .flip-back { transform: rotateY(180deg); background: #f8f3fd; border-color: #d8c6ee; justify-content: flex-start; }
 .flip .ico { font-size: 28px; line-height: 1; }
 .flip.done .flip-back { background: #ecf8f1; border-color: #b6e2c6; }
+/* 궁금증 카드 뒷면 — 규칙은 칩이 아니라 글자처럼 줄바꿈되게(긴 집합도 카드 안에 들어가게) */
+.flip-back.rule-back { justify-content: center; align-items: center; text-align: center; gap: 4px; padding: 6px 9px; }
+.rule-line { font-size: 14.5px; font-weight: 800; line-height: 1.45; }
+.ra, .rb { border-radius: 6px; padding: 0 4px; -webkit-box-decoration-break: clone; box-decoration-break: clone; font-weight: 800; }
+.ra { color: #1d5fa0; background: var(--a-soft); }
+.rb { color: #a3530a; background: var(--b-soft); }
+.rule-why { font-size: 12.5px; color: var(--sub); line-height: 1.35; }
+/* 뒤집는 카드의 내용이 카드보다 길어지면 잘리지 않고 그 안에서 스크롤 */
+.flip-face { overflow-y: auto; }
 
 /* ── 대화상자 ── */
 .modal-bg { position: absolute; inset: 0; background: rgba(30,20,40,.45); display: flex; align-items: center; justify-content: center; z-index: 50; }
@@ -363,7 +372,9 @@ html.phone .calc3 .arrow { transform: rotate(90deg); justify-self: center; }
 html.phone .opts, html.phone .progress-list { grid-template-columns: 1fr; }
 html.phone .opt { font-size: 16px; padding: 10px 12px; }
 html.phone .flips { grid-template-columns: 1fr 1fr !important; grid-template-rows: none !important; }
-html.phone .flip { min-height: 150px; }
+/* 휴대폰: 두 면을 한 칸에 겹쳐 쌓아 카드가 더 긴 면만큼 자란다(고정 높이면 글이 카드 안에서 잘린다) */
+html.phone .flip-in { display: grid; height: auto; min-height: 150px; }
+html.phone .flip-face { position: relative; inset: auto; grid-area: 1 / 1; overflow: visible; }
 html.phone .scroll-x, html.phone .mtx-wrap { overflow-x: auto; }
 html.phone .scroll-y { max-height: 60vh; flex: none; }
 html.phone table.mtx td { width: 46px; height: 36px; }

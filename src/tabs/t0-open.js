@@ -165,10 +165,11 @@ function 연관분석이란(el, 수명, 도구) {
       const 카드 = h('div', { class: 'flip' + (상태.뒤집음.includes(i) ? ' on done' : '') },
         h('div', { class: 'flip-in' },
           h('div', { class: 'flip-face', style: { fontSize: '14.5px' } }, h('b', null, `❓ ${q.앞}`), h('span', { class: 'muted', style: { fontSize: '12.5px' } }, '눌러서 규칙 꼴로 바꾸기')),
-          h('div', { class: 'flip-face flip-back', style: { fontSize: '14.5px', justifyContent: 'center' } },
-            h('div', { class: 'row', style: { justifyContent: 'center', gap: '5px' } },
-              h('span', { class: 'chip a' }, `{${q.A.join(', ')}}`), h('b', null, '→'), h('span', { class: 'chip b' }, `{${q.B.join(', ')}}`)),
-            h('div', { class: 'muted center', style: { fontSize: '12.5px' } }, q.덧 || '파랑 = 먼저 산 것(선행) · 주황 = 함께 살 것(후행)'))));
+          // 뒷면: 규칙 한 줄(길면 글자처럼 줄바꿈) + 이렇게 쓴 까닭 한 줄
+          h('div', { class: 'flip-face flip-back rule-back' },
+            h('div', { class: 'rule-line' },
+              h('span', { class: 'ra' }, `{${q.A.join(', ')}}`), ' → ', h('span', { class: 'rb' }, `{${q.B.join(', ')}}`)),
+            h('div', { class: 'rule-why' }, q.왜))));
       카드.addEventListener('click', () => {
         카드.classList.toggle('on');
         if (!상태.뒤집음.includes(i)) { 상태.뒤집음.push(i); 카드.classList.add('done'); 저장(); 끝확인(); }
@@ -181,7 +182,9 @@ function 연관분석이란(el, 수명, 도구) {
     정의판,
     h('div', { class: 'split' },
       h('div', { class: 'panel fill', style: { flex: 1.25 } }, h('h3', null, '🧭 데이터에서 규칙을 찾아 전략으로'), 흐름),
-      h('div', { class: 'panel fill', style: { flex: 1 } }, h('h3', null, '🃏 궁금증을 「A → B」 규칙 꼴로 바꾸면?'), 뒤집개))));
+      h('div', { class: 'panel fill', style: { flex: 1 } }, h('h3', null, '🃏 궁금증을 「A → B」 규칙 꼴로 바꾸면?'),
+        h('div', { class: 'muted', style: { fontSize: '13.5px' } }, h('span', { class: 'ra' }, 'A 파랑'), ' = 조건(먼저 산 것, 선행) · ', h('span', { class: 'rb' }, 'B 주황'), ' = 결과(함께 살 것, 후행)'),
+        뒤집개))));
 }
 
 // ───────────────────────── 3. 어디에 쓰일까? ─────────────────────────
@@ -199,33 +202,36 @@ function 활용사례(el, 수명, 도구) {
     let 고른 = [];
     const 맞음 = () => 상태.맞춤.includes(i);
     const 슬롯 = h('div', { class: 'row', style: { justifyContent: 'center', gap: '5px', fontSize: '15px' } });
-    const 칩줄 = h('div', { class: 'row', style: { justifyContent: 'center', gap: '5px' } });
+    const 칩줄 = h('div', { class: 'row', style: { justifyContent: 'center', gap: '4px' } });
     const 쪽지 = h('div', { class: 'small center' });
+    // 풀고 나면 상황 글 대신 까닭·활용을 보인다(상황은 앞면에 그대로 있다)
+    const 상황줄 = h('div', { class: 'muted center', style: { fontSize: '12.5px' } }, c.상황);
     function 뒤그리기() {
+      상황줄.style.display = 맞음() ? 'none' : '';
       const a = 맞음() ? c.A : 고른[0], b = 맞음() ? c.B : 고른[1];
       채우기(슬롯, h('span', { class: 'chip a' }, a || 'A ?'), h('b', null, '→'), h('span', { class: 'chip b' }, b || 'B ?'));
       채우기(칩줄, 맞음() ? null : c.보기.map(x => h('button', {
-        class: 'chip' + (고른.includes(x) ? ' on' : ''),
+        class: 'chip' + (고른.includes(x) ? ' on' : ''), style: { fontSize: '13.5px', padding: '2px 8px' },
         onClick: e => {
           e.stopPropagation();
           if (고른.includes(x)) 고른 = 고른.filter(y => y !== x); else if (고른.length < 2) 고른.push(x);
           if (고른.length === 2) {
             if (고른[0] === c.A && 고른[1] === c.B) { 상태.맞춤.push(i); 저장(); 카드.classList.add('done'); 수새로(); 끝확인(); }
-            else { 쪽지.innerHTML = `<span style="color:var(--bad)">❌ ${고른[0] === c.B && 고른[1] === c.A ? '방향이 거꾸로예요 — 먼저 일어나는 쪽이 A' : '다시 골라 보세요'}</span>`; 고른 = []; }
+            else { 쪽지.innerHTML = `<span style="color:var(--bad)">❌ ${고른[0] === c.B && 고른[1] === c.A ? '차례가 거꾸로예요 — 조건(A)을 먼저 누르세요' : '다시 골라 보세요'}</span>`; 고른 = []; }
           }
           뒤그리기();
         },
       }, x)));
-      if (맞음()) 쪽지.innerHTML = `⭕ <b>활용</b>: ${c.활용}`;
-      else if (!고른.length && !쪽지.textContent.startsWith('❌')) 쪽지.textContent = '먼저 일어나는 것(A) → 함께 일어나는 것(B) 차례로 누르세요';
+      if (맞음()) 쪽지.innerHTML = `⭕ ${c.왜}<br><b>활용</b>: ${c.활용}`;
+      else if (!고른.length && !쪽지.textContent.startsWith('❌')) 쪽지.textContent = 'A(조건) → B(결과) 차례로 누르세요';
     }
     const 카드 = h('div', { class: 'flip' + (맞음() ? ' on done' : '') },
       h('div', { class: 'flip-in' },
         h('div', { class: 'flip-face', style: { alignItems: 'center', textAlign: 'center' } },
           h('div', { class: 'ico', style: { fontSize: '34px' } }, c.아이콘), h('b', null, c.분야), h('div', { class: 'small' }, c.상황),
           h('span', { class: 'muted', style: { fontSize: '12.5px' } }, '눌러서 규칙 만들기 ↻')),
-        h('div', { class: 'flip-face flip-back', style: { gap: '6px', justifyContent: 'center' } },
-          h('b', { class: 'center' }, `${c.아이콘} ${c.분야}`), h('div', { class: 'muted center', style: { fontSize: '12.5px' } }, c.상황), 슬롯, 칩줄, 쪽지)));
+        h('div', { class: 'flip-face flip-back', style: { gap: '4px', justifyContent: 'center', padding: '7px 9px' } },
+          h('b', { class: 'center' }, `${c.아이콘} ${c.분야}`), 상황줄, 슬롯, 칩줄, 쪽지)));
     카드.querySelector('.flip-face:not(.flip-back)').addEventListener('click', () => 카드.classList.add('on'));
     카드.querySelector('.flip-back').addEventListener('click', e => { if (e.target.closest('button')) return; 카드.classList.remove('on'); });
     뒤그리기();
