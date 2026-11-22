@@ -4,7 +4,7 @@ import { h, 채우기, 알림, 서술칸, 다듬기, 대화상자, 을, 이 } fr
 import { 기록 } from '../lib/store.js';
 import { 추천, 세기, 수글 } from '../lib/assoc.js';
 import { 영수증들 } from '../lib/views.js';
-import { 쇼핑몰, 그림, 궁금증, 정의빈칸, 사례, 음료이야기, 규칙칩, 규칙문장 as 문장문제, 서술, 힌트글자 } from '../data.js';
+import { 쇼핑몰, 그림, 궁금증, 정의빈칸, 사례, 규칙칩, 규칙문장 as 문장문제, 서술, 힌트글자 } from '../data.js';
 
 const 퍼센트 = v => Math.round(v * 100) + '%';
 const 칩글 = x => (그림[x] ? 그림[x] + ' ' : '') + x;
@@ -189,12 +189,9 @@ function 연관분석이란(el, 수명, 도구) {
 
 // ───────────────────────── 3. 어디에 쓰일까? ─────────────────────────
 function 활용사례(el, 수명, 도구) {
-  const 상태 = 기록.get('사례', { 맞춤: [], 음료: null });
+  const 상태 = 기록.get('사례', { 맞춤: [] });
   const 저장 = () => 기록.set('사례', 상태);
-  const 끝확인 = () => {
-    const 글 = (기록.get('서술', {}).주변 || '').replace(/\s/g, '');
-    if (상태.맞춤.length === 사례.length && 상태.음료 === 음료이야기.답 && 글.length >= 힌트글자) 도구.완료();
-  };
+  const 끝확인 = () => { if (상태.맞춤.length === 사례.length) 도구.완료(); };
   const 맞춘수 = h('span', { class: 'badge' });
   const 수새로 = () => { 맞춘수.textContent = `규칙 완성 ${상태.맞춤.length}/${사례.length}`; 맞춘수.className = 'badge' + (상태.맞춤.length === 사례.length ? ' ok' : ''); };
 
@@ -239,30 +236,10 @@ function 활용사례(el, 수명, 도구) {
   });
   수새로();
 
-  const 음료피드백 = h('div', { class: 'fb' });
-  const 음료칸 = h('div', { class: 'row' });
-  const 음료그리기 = () => 채우기(음료칸, 음료이야기.보기.map((t, i) => h('button', {
-    class: 'chip' + (상태.음료 === i ? (i === 음료이야기.답 ? ' ok' : ' bad') : ''),
-    onClick: () => {
-      상태.음료 = i; 저장(); 음료그리기();
-      알림(음료피드백, i === 음료이야기.답 ? '⭕ ' + 음료이야기.해설 : '🤔 음료와 「함께」 팔리는 것이 무엇이었는지 다시 읽어 보세요.', i === 음료이야기.답 ? 'ok' : 'bad');
-      끝확인();
-    },
-  }, t)));
-  음료그리기();
-  if (상태.음료 === 음료이야기.답) 알림(음료피드백, '⭕ ' + 음료이야기.해설, 'ok');
-
-  el.append(h('div', { class: 'split' },
-    h('div', { class: 'col', style: { flex: 1.65 } },
-      h('div', { class: 'row nw' }, h('h2', null, '🌍 연관 분석은 어디에 쓰일까?'), 맞춘수),
-      h('p', { class: 'lead' }, '판매를 늘리려고 이웃 상품을 가까이 두거나, 맞춤형 광고·동영상 추천 등에 씁니다. 카드를 눌러 각 사례의 연관 규칙을 완성해 보세요.'),
-      h('div', { class: 'flips', style: { gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: '1fr 1fr', flex: 1 } }, 카드들)),
-    h('div', { class: 'col', style: { flex: 1 } },
-      h('div', { class: 'panel' },
-        h('h3', null, '🥤 음료 매출을 증가시켜라!'),
-        h('p', { class: 'small', style: { margin: '4px 0' } }, 음료이야기.글),
-        h('b', { class: 'small' }, 음료이야기.물음), 음료칸, 음료피드백),
-      서술칸({ 키: '주변', ...서술.주변, 줄: 5, 힌트글자, 다씀: 끝확인 }))));
+  el.append(h('div', { class: 'col', style: { flex: 1 } },
+    h('div', { class: 'row nw' }, h('h2', null, '🌍 연관 분석은 어디에 쓰일까?'), 맞춘수),
+    h('p', { class: 'lead' }, '판매를 늘리려고 이웃 상품을 가까이 두거나, 맞춤형 광고·동영상 추천 등에 씁니다. 카드를 눌러 각 사례의 연관 규칙을 완성해 보세요.'),
+    h('div', { class: 'flips', style: { gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: '1fr 1fr', flex: 1 } }, 카드들)));
 }
 
 // ───────────────────────── 4. 연관 규칙의 표현 ─────────────────────────
