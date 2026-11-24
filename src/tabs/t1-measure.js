@@ -63,7 +63,7 @@ function 세가지질문(el, 수명, 도구) {
     h('div', { class: 'chain', style: { fontSize: '15.5px' } },
       h('span', { class: 'node on' }, '① 데이터 간 규칙 만들기: if A → B'), h('span', { class: 'arr' }, '→'),
       h('span', { class: 'node on' }, '② 규칙이 데이터에 맞는지 기준 정하기: 지지도·신뢰도·향상도'), h('span', { class: 'arr' }, '→'),
-      h('span', { class: 'node on' }, '③ 규칙의 쓸모 평가하기')),
+      h('span', { class: 'node on' }, '③ 규칙의 효용성 평가하기 (실제 규칙 생성)')),
     h('div', { class: 'split' },
       h('div', { class: 'col', style: { flex: 1.25 } },
         h('div', { class: 'panel' }, h('h3', null, '💬 친구들의 질문에 알맞은 지표는?'), 말칸, 짝피드백),
