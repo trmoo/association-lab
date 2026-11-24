@@ -1,119 +1,15 @@
 /*! 연관 분석 실험실 — © 2026 티쳐무 · 모든 권리 보유 */
-// 탭 3 연관 규칙 찾기 — 주문 바꾸기 실험실 · 실습 정리표 · 연관 규칙 탐색기 · 좋은 규칙 고르기
-import { h, s, 채우기, 알림, 서술칸, 다듬기, 고르기단추, 슬라이더, 을, 이, 과 } from '../lib/ui.js';
+// 탭 3 연관 규칙 찾기 — 실습 정리표 · 연관 규칙 탐색기 · 좋은 규칙 고르기
+// (「주문 바꾸기 실험실」 카드는 2026-11-24 사용자 지시로 뺐다 — 어렵다)
+import { h, s, 채우기, 알림, 서술칸, 고르기단추, 슬라이더, 을, 이, 과 } from '../lib/ui.js';
 import { 기록 } from '../lib/store.js';
-import { 지표, 규칙목록, 좋은규칙, 향상도판정, 분수글, 수글, 맞는수 } from '../lib/assoc.js';
+import { 지표, 규칙목록, 좋은규칙, 향상도판정, 수글, 맞는수 } from '../lib/assoc.js';
 import { 영수증들, 값글, 분수 } from '../lib/views.js';
-import { 편의점, 편의점40, 그림, 향상도뜻빈칸, 정리표쌍, 판정규칙, 서술, 힌트글자 } from '../data.js';
+import { 편의점, 편의점40, 그림, 정리표쌍, 판정규칙, 서술, 힌트글자 } from '../data.js';
 
 const 칩글 = x => (그림[x] ? 그림[x] + ' ' : '') + x;
-const 복사 = 거래 => 거래.map(t => [...t]);
 
-// ───────────────────────── 1. 주문 바꾸기 실험실 ─────────────────────────
-const 도전목록 = [
-  { id: 'lt', 글: '주문 속 상품을 넣고 빼서 향상도를 1 보다 작게 만들기', 확인: st => st.nAB > 0 && 향상도판정(st) === '작음' },
-  { id: 'eq', 글: '향상도를 정확히 1 로 만들기 (두 상품이 서로 독립)', 확인: st => st.nAB > 0 && 향상도판정(st) === '같음' },
-  { id: 'add', 글: '주문을 더하거나 빼서 전체 거래 수를 바꿔 보기', 확인: st => st.N !== 6 },
-  { id: 'rare', 글: '신뢰도는 1 인데 지지도는 0.2 보다 작은 규칙 찾기', 확인: st => st.nA > 0 && st.nAB === st.nA && st.지지도 < 0.2 },
-];
-function 실험실(el, 수명, 도구) {
-  const 품목 = 편의점.품목;
-  const 상태 = 기록.get('실험실', { 거래: 복사(편의점.거래), A: '삼각김밥', B: '사이다', 도전: [], 뜻: ['', '', ''], 뜻맞음: false });
-  const 저장 = () => 기록.set('실험실', 상태);
-  const 끝확인 = () => { if (['lt', 'eq'].every(id => 상태.도전.includes(id)) && 상태.뜻맞음) 도구.완료(); };
-  const 영수증칸 = h('div', { class: 'grow scroll-y' });
-  const 고르기칸 = h('div', { class: 'row', style: { gap: '4px' } });
-  const 지표칸 = h('div', { class: 'mboxes' });
-  const 계기칸 = h('div');
-  const 도전칸 = h('div', { class: 'col', style: { gap: '3px' } });
-  const 단추줄 = h('div', { class: 'row' });
-  const 문장칸 = h('div', { class: 'big-eq', style: { fontSize: '15.5px' } });
-
-  function 그리기() {
-    const { A, B } = 상태, 거래 = 상태.거래, st = 지표(거래, A, B);
-    채우기(문장칸, '규칙: 만약 ', h('em', { class: 'a' }, A), 을(A).slice(A.length), ' 사면 ', h('em', { class: 'b' }, B), '도 산다');
-    채우기(고르기칸,
-      h('b', { class: 'ta' }, 'A'), 품목.map(x => h('button', { class: 'chip' + (A === x ? ' a' : ''), style: { padding: '1px 7px', fontSize: '14px' }, onClick: () => { if (x !== B) { 상태.A = x; 저장(); 그리기(); } } }, 칩글(x))),
-      h('b', { class: 'tb', style: { marginLeft: '8px' } }, 'B'), 품목.map(x => h('button', { class: 'chip' + (B === x ? ' b' : ''), style: { padding: '1px 7px', fontSize: '14px' }, onClick: () => { if (x !== A) { 상태.B = x; 저장(); 그리기(); } } }, 칩글(x))));
-    채우기(단추줄,
-      h('button', { class: 'btn sm', disabled: 거래.length >= 10, onClick: () => { 상태.거래.push([A]); 저장(); 그리기(); } }, '＋ 주문 더하기'),
-      h('button', { class: 'btn sm', disabled: 거래.length <= 2, onClick: () => { 상태.거래.pop(); 저장(); 그리기(); } }, '－ 마지막 주문 빼기'),
-      h('button', { class: 'btn sm', onClick: () => { 상태.거래 = 복사(편의점.거래); 저장(); 그리기(); } }, '↺ 처음 6건으로'),
-      h('span', { class: 'muted' }, `전체 ${거래.length}건 · 상품을 누르면 넣고 빼요`));
-    채우기(영수증칸, 영수증들(거래, {
-      A, B, 품목, 열: 거래.length <= 6 ? 3 : 5, 작게: true,
-      편집: (i, x) => {
-        const t = 상태.거래[i];
-        if (t.includes(x)) { if (t.length > 1) t.splice(t.indexOf(x), 1); } else t.push(x);
-        저장(); 그리기();
-      },
-    }));
-    const 박스 = (cls, 이름, n, d, 덧) => h('div', { class: 'mbox ' + cls }, h('h4', null, 이름), h('div', { class: 'val' }, d ? 수글(n / d) : '—'), h('div', { class: 'how' }, d ? `${n}/${d}${분수글(n, d) !== `${n}/${d}` ? ' = ' + 분수글(n, d) : ''}` : '', 덧 || ''));
-    채우기(지표칸,
-      박스('sup', '지지도', st.nAB, st.N),
-      박스('conf', '신뢰도', st.nAB, st.nA),
-      박스('lift', '향상도', st.향상도분자, st.향상도분모));
-    채우기(계기칸, 계기판(st));
-    // 도전 과제
-    for (const d of 도전목록) if (!상태.도전.includes(d.id) && d.확인(st)) { 상태.도전.push(d.id); 저장(); }
-    채우기(도전칸, 도전목록.map(d => h('div', { class: 'row nw', style: { gap: '6px', fontSize: '15px' } },
-      h('span', { style: { color: 상태.도전.includes(d.id) ? 'var(--ok)' : '#c5bfcf', fontWeight: 900 } }, 상태.도전.includes(d.id) ? '✔' : '○'),
-      h('span', { style: { color: 상태.도전.includes(d.id) ? 'var(--ok)' : 'inherit' } }, d.글))));
-    끝확인();
-  }
-
-  // 향상도의 뜻 빈칸
-  const 뜻칸 = h('div', { class: 'col', style: { gap: '3px' } });
-  const 뜻피드백 = h('div', { class: 'fb' });
-  const 뜻입력 = 향상도뜻빈칸.map((b, i) => {
-    const 칸 = h('input', { class: 'fill', style: { width: '4.6em' }, value: 상태.뜻[i], 'aria-label': b.조건 });
-    칸.addEventListener('input', () => { 상태.뜻[i] = 칸.value; 칸.classList.remove('ok', 'bad'); 저장(); });
-    return 칸;
-  });
-  채우기(뜻칸, 향상도뜻빈칸.map((b, i) => h('div', { class: 'row nw', style: { fontSize: '15px', gap: '6px' } },
-    h('span', { class: 'badge', style: { minWidth: '92px', textAlign: 'center' } }, b.조건), h('span', null, b.앞, ' ', 뜻입력[i], b.뒤))));
-  const 뜻확인 = (조용히 = false) => {
-    let 다 = true;
-    향상도뜻빈칸.forEach((b, i) => { const ok = b.답.some(d => 다듬기(뜻입력[i].value).startsWith(다듬기(d)) || 다듬기(뜻입력[i].value) === 다듬기(d)); 뜻입력[i].classList.toggle('ok', ok); 뜻입력[i].classList.toggle('bad', !ok); if (!ok) 다 = false; });
-    상태.뜻맞음 = 다; 저장();
-    if (!조용히 || 다) 알림(뜻피드백, 다 ? '⭕ 향상도 > 1 연관 · = 1 독립 · < 1 억제(음의 연관)' : '❌ 위 실험으로 향상도를 1 보다 크게·같게·작게 만들어 보며 다시 생각해 보세요.', 다 ? 'ok' : 'bad');
-    끝확인();
-  };
-  if (상태.뜻맞음) queueMicrotask(() => 뜻확인(true));
-
-  el.append(h('div', { class: 'split' },
-    h('div', { class: 'col', style: { flex: 1.2 } },
-      h('h2', null, '🧪 주문 바꾸기 실험실'),
-      h('p', { class: 'lead', style: { fontSize: '15px' } }, '영수증 속 상품을 눌러 넣고 빼 보세요. 오른쪽 세 지표와 향상도 계기판이 바로 바뀝니다.'),
-      고르기칸, 단추줄, 영수증칸),
-    h('div', { class: 'col', style: { flex: 1 } },
-      문장칸,
-      지표칸, 계기칸,
-      h('div', { class: 'panel', style: { padding: '6px 11px' } }, h('h3', null, '🏆 도전 과제'), 도전칸),
-      h('div', { class: 'panel', style: { padding: '6px 11px' } }, h('h3', null, '📝 향상도의 뜻'), 뜻칸,
-        h('div', { class: 'row nw' }, h('button', { class: 'btn sm primary', onClick: () => 뜻확인() }, '확인'), 뜻피드백)))));
-  그리기();
-}
-
-/** 향상도 계기판 — 0 ~ 3 눈금, 1 을 기준으로 왼쪽은 억제, 오른쪽은 연관 */
-function 계기판(st) {
-  const W = 520, H = 100, 최대 = 3, X = v => 20 + (Math.min(v, 최대) / 최대) * (W - 40);
-  const 있음 = st.nA && st.nB;
-  const 판 = 향상도판정(st);
-  return s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'plot', style: { width: '100%', height: 'auto', maxHeight: '100px' }, role: 'img', 'aria-label': '향상도 계기판' },
-    s('rect', { x: X(0), y: 46, width: X(1) - X(0), height: 18, rx: 4, fill: '#f8d7d7' }),
-    s('rect', { x: X(1), y: 46, width: X(최대) - X(1), height: 18, rx: 4, fill: '#d5f0de' }),
-    s('line', { x1: X(1), x2: X(1), y1: 38, y2: 72, stroke: '#1f2433', 'stroke-width': 2.5 }),
-    [0, 0.5, 1, 1.5, 2, 2.5, 3].map(v => s('text', { x: X(v), y: 80, 'text-anchor': 'middle', class: 'tick' }, v === 3 ? '3+' : v)),
-    s('text', { x: X(0) + 4, y: 14, 'text-anchor': 'start', 'font-size': 13.5, 'font-weight': 800, fill: '#9a2222' }, '억제 (< 1)'),
-    s('text', { x: X(1), y: 97, 'text-anchor': 'middle', 'font-size': 13.5, 'font-weight': 800, fill: '#1f2433' }, '▲ 독립 (= 1)'),
-    s('text', { x: X(최대) - 4, y: 14, 'text-anchor': 'end', 'font-size': 13.5, 'font-weight': 800, fill: '#145c33' }, '연관 (> 1)'),
-    있음 ? s('g', { style: { transition: 'transform .45s', transform: `translateX(${X(st.향상도)}px)` } },
-      s('path', { d: 'M0 44 l-9 -14 h18 z', fill: 판 === '큼' ? '#1e8e4e' : 판 === '같음' ? '#1f2433' : '#d64545' }),
-      s('text', { x: 0, y: 27, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 900 }, 수글(st.향상도))) : null);
-}
-
-// ───────────────────────── 2. 실습 정리표 ─────────────────────────
+// ───────────────────────── 1. 실습 정리표 ─────────────────────────
 function 정리표(el, 수명, 도구) {
   const 거래 = 편의점.거래;
   const 상태 = 기록.get('정리표', { 쌍: 0, 칸: {}, 확인: [false, false, false] });
@@ -193,15 +89,15 @@ function 정리표(el, 수명, 도구) {
   그리기();
 }
 
-// ───────────────────────── 3. 연관 규칙 탐색기 ─────────────────────────
+// ───────────────────────── 2. 연관 규칙 탐색기 ─────────────────────────
 const 데이터들 = {
   six: { 글: '편의점 6건', 거래: () => 편의점.거래, 품목: 편의점.품목 },
   forty: { 글: '편의점 40건 (가상)', 거래: () => 편의점40.거래, 품목: 편의점40.품목 },
-  lab: { 글: '실험실에서 바꾼 주문', 거래: () => 기록.get('실험실', null)?.거래 || 편의점.거래, 품목: 편의점.품목 },
 };
 function 탐색기(el, 수명, 도구) {
   const 상태 = 기록.get('탐색기', { 데이터: 'forty', 최소지지도: 0.2, 최소신뢰도: 0.6, 정렬: '향상도', 고른: null, 답수: '', 문제: [false, false, false] });
   const 저장 = () => 기록.set('탐색기', 상태);
+  if (!데이터들[상태.데이터]) 상태.데이터 = 'forty'; // 예전 기록의 「실험실에서 바꾼 주문」(카드를 뺐다)
   const 그래프칸 = h('div', { class: 'svgbox' });
   const 표칸 = h('div', { class: 'grow scroll-y', style: { background: '#fff', border: '1px solid var(--line)', borderRadius: '12px' } });
   const 고른칸 = h('div');
@@ -318,7 +214,7 @@ function 탐색기(el, 수명, 도구) {
   그리기(); 문제그리기();
 }
 
-// ───────────────────────── 4. 좋은 규칙 고르기 ─────────────────────────
+// ───────────────────────── 3. 좋은 규칙 고르기 ─────────────────────────
 function 좋은규칙고르기(el, 수명, 도구) {
   const 최소지지도 = 0.2, 최소신뢰도 = 0.6;
   const 목록 = 판정규칙.map(([A, B]) => ({ A, B, ...지표(편의점40.거래, A, B) }));
@@ -389,7 +285,6 @@ function 좋은규칙고르기(el, 수명, 도구) {
 export default {
   id: 'find', 이름: '규칙 찾기', 아이콘: '🔎',
   카드: [
-    { id: 'lab', 제목: '주문 바꾸기 실험실', 그리기: 실험실 },
     { id: 'sheet', 제목: '실습 정리표', 그리기: 정리표 },
     { id: 'explore', 제목: '연관 규칙 탐색기', 그리기: 탐색기 },
     { id: 'good', 제목: '좋은 규칙 고르기', 그리기: 좋은규칙고르기 },

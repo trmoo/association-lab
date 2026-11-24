@@ -351,9 +351,6 @@ svg.plot .rule-dot:hover { stroke: #111; stroke-width: 2.5; }
 .stage-tabs .st.done { border-color: var(--ok); color: var(--ok); }
 .stage-tabs .st:disabled { opacity: .35; cursor: default; }
 
-/* ── 계기판(향상도) ── */
-.gauge-wrap { position: relative; }
-
 /* ══ 세로로 긴 창 (화면을 좌우로 나눈 경우 등) ══
    무대 너비는 1280 그대로 두고 높이만 창 비율만큼 늘린다(main.js). 칸은 나란히 그대로 두고,
    늘어난 높이는 그래프·영수증처럼 늘어나는 칸(panel.fill)이 나눠 갖는다. 글자는 조금 키운다. */
