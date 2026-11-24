@@ -444,8 +444,8 @@ function 지표카드(종류) {
         h('div', { class: 'col', style: { flex: 0.9 } }, h('div', { class: 'panel fill', style: { padding: '4px' } }, 벤칸), 종류 === 'lift' ? 막대칸 : null, 종류 === 'lift' ? 두배칸 : null),
         h('div', { class: 'col', style: { flex: 1.05 } },
           h('div', { class: 'panel', style: { padding: '7px 11px' } },
-            // 「이 규칙 고르기」 단추는 두지 않는다(2026-11-24 사용자 지시) — 학생이 A·B 칩에서 직접 고른다
-            h('h3', null, '✍️ 직접 계산하기: 삼각김밥 → 사이다'),
+            h('div', { class: 'row nw', style: { justifyContent: 'space-between' } }, h('h3', null, '✍️ 직접 계산하기: 삼각김밥 → 사이다'),
+              h('button', { class: 'btn xs', onClick: () => { 상태.A = 목표.A; 상태.B = 목표.B; 저장(); 그리기(); } }, '이 규칙 고르기')),
             직접칸, 뜻칸,
             h('div', { class: 'row nw' }, h('button', { class: 'btn sm primary', onClick: () => 직접채점() }, '확인'), 직접피드백)),
           h('div', { class: 'panel', style: { padding: '6px 10px' } }, ox칸, ox피드백)))));
