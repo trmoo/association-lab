@@ -47,9 +47,9 @@ input, textarea, select { font: inherit; }
 .cards { display: flex; gap: 6px; flex: 1; overflow-x: auto; scrollbar-width: none; min-width: 0; }
 .cards::-webkit-scrollbar { display: none; }
 .cards > :first-child { margin-left: auto; } .cards > :last-child { margin-right: auto; }  /* 가운데 맞춤(넘쳐도 왼쪽이 잘리지 않게) */
-.pill { border: 2px solid transparent; background: #fff; color: var(--sub); border-radius: 999px; padding: 5px 14px; font-size: 15.5px; font-weight: 700; white-space: nowrap; flex: none; }
+.pill { border: 2px solid transparent; background: #fff; color: var(--sub); border-radius: 999px; padding: 5px 12px; font-size: 15.5px; font-weight: 700; white-space: nowrap; flex: none; }
 .pill.on { border-color: var(--brand); color: var(--brand); }
-.pill.done::after { content: ' ✔'; color: var(--ok); }
+.pill.done::after { content: '✔'; margin-left: 3px; font-size: 14px; color: var(--ok); }
 .nav-btn { width: 40px; height: 36px; border: 0; border-radius: 10px; background: var(--brand); color: #fff; font-size: 15px; flex: none; }
 .nav-btn:disabled { opacity: .3; cursor: default; }
 .sub-acts { display: flex; gap: 6px; flex: none; }
@@ -121,6 +121,23 @@ html.wide .card { max-width: 1560px; }
 .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 3px; line-height: 1.2; }
 .frac > span:first-child { border-bottom: 2px solid currentColor; padding: 0 4px 1px; }
 .frac > span:last-child { padding: 1px 4px 0; }
+/* P(A)·P(B)·P(A∩B) 계산식 상자 — 카드 맨 위에서 눈에 띄게. 칸 색은 벤 다이어그램과 같다 */
+.pform { border: 2px solid var(--brand); border-radius: 12px; background: #fff; padding: 6px 8px 8px; display: flex; flex-direction: column; gap: 6px; flex: none; }
+.pform-rule { align-self: center; background: var(--brand); color: #fff; border-radius: 999px; padding: 3px 16px; font-size: 17px; font-weight: 800; }
+.pform-rule .frac > span:first-child { border-bottom-color: #fff; }
+.pform-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.pf { display: flex; align-items: center; justify-content: center; gap: 2px; border-radius: 10px; border: 2px solid; padding: 5px 4px; font-size: 15px; text-align: center; }
+.pf > b { white-space: nowrap; font-size: 16px; }
+.pf.a { border-color: var(--a); background: var(--a-soft); color: #1d5fa0; }
+.pf.b { border-color: var(--b); background: var(--b-soft); color: #a3530a; }
+.pf.ab { border-color: var(--ab); background: var(--ab-soft); color: #1b7a43; }
+/* P(A) 구하기 카드 — 규칙 띠와 P(A) 칸 하나를 한 줄에 */
+.pform.one { flex-direction: row; justify-content: center; align-items: center; gap: 14px; padding: 8px 12px; }
+.pform.one .pf { padding: 5px 14px; font-size: 16px; }
+.pform.one .pf > b { font-size: 17px; }
+/* 줄을 눌러 고르는 표 — 고른 줄은 노랗게 */
+table.pick-rows tr:not(:first-child) { cursor: pointer; }
+table.pick-rows tr.sel td { background: #fff3c4; }
 .kbd { display: inline-block; border: 1px solid #bbb; border-bottom-width: 3px; border-radius: 5px; padding: 0 5px; font-size: 13px; background: #fff; }
 
 /* ── 서술형 칸 — 10글자 이상 쓰면 예시 답이 아래에 열린다 ── */
@@ -175,6 +192,12 @@ button.it.off { background: #fff; color: #b3adbd; border: 1.5px dashed #cfc8d8; 
 .rcpts.mini .rcpt-h { margin-bottom: 3px; }
 .rcpts.mini .its { gap: 3px; }
 .rcpts.mini .it { font-size: 13px; padding: 0 6px; }
+/* P(A) 구하기 카드 — 영수증이 화면의 주인공이라 크게 */
+.rcpts-big .rcpts { gap: 10px; }
+.rcpts-big .rcpt { padding: 7px 10px 10px; min-height: 92px; }
+.rcpts-big .rcpt-h { font-size: 14px; }
+.rcpts-big .it { font-size: 17px; padding: 3px 10px; }
+.rcpts-big .rcpt .its { gap: 6px; }
 .tag { font-size: 12px; font-weight: 800; padding: 0 6px; border-radius: 6px; }
 .tag.a { background: var(--a); color: #fff; } .tag.b { background: var(--b); color: #fff; } .tag.ab { background: var(--ab); color: #fff; }
 
@@ -336,6 +359,9 @@ svg.plot .rule-dot:hover { stroke: #111; stroke-width: 2.5; }
    늘어난 높이는 그래프·영수증처럼 늘어나는 칸(panel.fill)이 나눠 갖는다. 글자는 조금 키운다. */
 html.tall #stage { font-size: 18px; }
 html.tall .card { padding-top: 16px; padding-bottom: 16px; }
+/* 세로로 긴 창은 무대 폭이 1120 이라 세 칸이 비좁다 — P(A)·P(B) 둘, P(A∩B) 는 한 줄 통째로 */
+html.tall .pform-row { grid-template-columns: 1fr 1fr; }
+html.tall .pf.ab { grid-column: 1 / -1; }
 
 /* ══ 휴대폰 세로 화면 (main.js 의 맞추기() 가 html 에 .phone 을 붙인다) ══
    1280×720 무대를 줄이지 않고 화면 너비 그대로 쓴다. 카드 안의 칸은 위아래로 쌓고, 페이지를 세로로 스크롤한다. */
@@ -381,6 +407,8 @@ html.phone table.mtx td { width: 46px; height: 36px; }
 html.phone table.mtx input.num { width: 36px; }
 html.phone table.mtx th { font-size: 12px; }
 html.phone .formula { font-size: 16px; overflow-x: auto; }
+html.phone .pform-row { grid-template-columns: 1fr; }
+html.phone .pform.one { flex-direction: column; gap: 6px; }
 html.phone table.grid { font-size: 13px; }
 html.phone table.grid th, html.phone table.grid td { padding: 3px 4px; }
 html.phone .foot { height: auto; flex-direction: column; gap: 6px; padding: 10px; text-align: center; }

@@ -9,7 +9,7 @@ import { 기록 } from './lib/store.js';
 import { 지표, 동시구매표, 규칙목록, 좋은규칙, 향상도판정, 추천, 세기, apriori단계, 집합수, 규칙수, 수글, 분수글, 맞는수, 집합글, 조합 } from './lib/assoc.js';
 import {
   편의점, 편의점40, 햄버거, 알파, 쇼핑몰, 미리적은칸, 정의빈칸, 사례, 규칙문장, 세질문, 향상도뜻빈칸,
-  정리표쌍, 판정규칙, 서술, 확인문제, 정리빈칸,
+  정리표쌍, 판정규칙, 서술, 확인문제, 정리빈칸, 교집합쌍,
 } from './data.js';
 import { 탭들 } from './tabs/index.js';
 
@@ -128,6 +128,7 @@ function 쪽3() {
   const 미리 = (r, c) => 미리적은칸.some(([a, b]) => a === r && b === c);
   const 세 = 기록.get('세질문');
   const P = 기록.get('P표');
+  const PAB = 기록.get('PAB표');
   const 동시판 = h('table', { class: 'p-table p-mtx' },
     h('tr', null, h('th'), 품목.map(x => h('th', null, x))),
     품목.map((행, r) => h('tr', null, h('th', null, 행), 품목.map((_, c) => {
@@ -156,6 +157,12 @@ function 쪽3() {
           const v = P?.값?.[x];
           const 정 = 세기(거래, [x]) / 거래.length;
           return [x, 빈글(v), `${분수글(세기(거래, [x]), 거래.length)} ${v && 맞는수(v, 정) ? '⭕' : ''}`];
+        })),
+        h('h3', null, 'P(A∩B) 정리'),
+        표(['A ∩ B', '내 답', 'P(A∩B)'], 교집합쌍.map(([a, b], i) => {
+          const v = PAB?.값?.[i];
+          const n = 세기(거래, [a, b]);
+          return [`${a} ∩ ${b}`, 빈글(v), `${분수글(n, 거래.length)} ${v && 맞는수(v, n / 거래.length) ? '⭕' : ''}`];
         })))),
     서술줄('최고칸'),
     h('h3', null, '✍️ 직접 계산하기 — 삼각김밥 → 사이다'),

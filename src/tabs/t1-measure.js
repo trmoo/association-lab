@@ -1,10 +1,10 @@
 /*! 연관 분석 실험실 — © 2026 티쳐무 · 모든 권리 보유 */
-// 탭 2 세 가지 지표 — 세 질문 · 주문 6건과 동시 구매표 · P(A) 와 벤 다이어그램 · 지지도 · 신뢰도 · 향상도
+// 탭 2 세 가지 지표 — 세 질문 · 주문 6건과 동시 구매표 · P(A) 구하기 · P(A∩B) 와 벤 다이어그램 · 지지도 · 신뢰도 · 향상도
 import { h, s, 채우기, 알림, 서술칸, 대화상자, 을, 이, 과 } from '../lib/ui.js';
 import { 기록 } from '../lib/store.js';
 import { 지표, 동시구매표, 세기, 분수글, 수글, 맞는수, 향상도판정 } from '../lib/assoc.js';
 import { 영수증들, 벤, 분수, 동시구매표판, 쓰이는칸, 값글 } from '../lib/views.js';
-import { 편의점, 미리적은칸, 그림, 세질문, 지표뜻, 서술, 힌트글자 } from '../data.js';
+import { 편의점, 미리적은칸, 그림, 세질문, 지표뜻, 서술, 힌트글자, 교집합쌍 } from '../data.js';
 
 const 품목 = 편의점.품목, 거래 = 편의점.거래, N = 거래.length;
 const 표정답 = 동시구매표(거래, 품목);
@@ -151,21 +151,23 @@ function 동시구매표카드(el, 수명, 도구) {
   영수증그리기();
 }
 
-// ───────────────────────── 3. P(A) 와 벤 다이어그램 ─────────────────────────
+// ───────────────────────── 3. P(A) 구하기 — 영수증을 보며 세기 ─────────────────────────
 function P정리(el, 수명, 도구) {
-  const 상태 = 기록.get('P표', { 값: {}, 확인: false, A: '삼각김밥', B: '아이스크림' });
+  const 상태 = 기록.get('P표', { 값: {}, 확인: false });
   const 저장 = () => 기록.set('P표', 상태);
-  const 벤칸 = h('div', { class: 'svgbox' });
-  const 식칸 = h('div', { class: 'formula', style: { fontSize: '16px', textAlign: 'left' } });
-  const 고르기칸 = h('div', { class: 'col', style: { gap: '4px' } });
-  function 벤그리기() {
-    채우기(고르기칸,
-      h('div', { class: 'row', style: { gap: '4px' } }, h('b', { class: 'ta' }, 'A'), 품목.map(x => h('button', { class: 'chip' + (상태.A === x ? ' a' : ''), onClick: () => { if (x !== 상태.B) { 상태.A = x; 저장(); 벤그리기(); } } }, 칩글(x)))),
-      h('div', { class: 'row', style: { gap: '4px' } }, h('b', { class: 'tb' }, 'B'), 품목.map(x => h('button', { class: 'chip' + (상태.B === x ? ' b' : ''), onClick: () => { if (x !== 상태.A) { 상태.B = x; 저장(); 벤그리기(); } } }, 칩글(x)))));
-    채우기(벤칸, 벤(거래, 상태.A, 상태.B, { 모드: 'pa', 가림: true }));
+  let 고른 = null;                                   // 표에서 누른 상품 — 영수증에 노랗게 칠한다(세는 것은 학생)
+  const 영수증칸 = h('div', { class: 'rcpts-big' });
+  const 안내 = h('div', { class: 'tip small' });
+  // 계산식 — 카드 맨 위에 크게. 상품을 누르면 그 상품 이름으로 바뀐다
+  const 식칸 = h('div', { class: 'pform one' });
+  function 그리기() {
+    채우기(영수증칸, 영수증들(거래, { 강조: 고른 ? [고른] : [], 열: 3, 표시: false }));
     채우기(식칸,
-      h('div', null, 'P(A) = ', 분수(`${이(상태.A)} 든 거래 수`, '전체 거래 수 6'), '    P(B) = ', 분수(`${이(상태.B)} 든 거래 수`, '전체 거래 수 6')),
-      h('div', { style: { marginTop: '4px' } }, 'P(A∩B) = ', 분수('A, B 가 함께 든 거래 수', '전체 거래 수 6'), h('span', { class: 'muted' }, '   ※ P(X) = X 의 경우의 수 ÷ 전체 경우의 수')));
+      h('div', { class: 'pform-rule' }, '📌 P(X) = ', 분수('X 의 경우의 수', '전체 경우의 수')),
+      h('div', { class: 'pf a' }, h('b', null, 고른 ? `P(${고른}) =` : 'P(A) ='), 분수(고른 ? `${이(고른)} 든 거래 수` : 'A 가 든 거래 수', '전체 거래 수 6')));
+    채우기(안내, 고른
+      ? h('span', { html: `🔍 노랗게 칠한 <b>${고른}</b>${이(고른).slice(고른.length)} 든 영수증을 세어 보세요. 그 수가 분자, 전체 거래 수 6 이 분모예요.` })
+      : '💡 오른쪽 표에서 상품을 누르면 그 상품이 영수증에 노랗게 칠해져요. 칠한 영수증을 세어 P(A) 를 적으세요.');
   }
   const 칸들 = {};
   const 피드백 = h('div', { class: 'fb' });
@@ -181,31 +183,104 @@ function P정리(el, 수명, 도구) {
     알림(피드백, 맞은 === 품목.length ? '⭕ 모두 정답! P(A) 는 「그 상품이 든 거래 수 ÷ 전체 거래 수」예요. 이 값들이 신뢰도·향상도 계산에 쓰여요.' : `${맞은}/${품목.length} 정답 — 분수(2/6)나 소수(0.33)로 적어요.`, 맞은 === 품목.length ? 'ok' : 'bad');
     if (맞은 === 품목.length) 도구.완료();
   };
-  const 표 = h('table', { class: 'grid', style: { width: '100%', fontSize: '16.5px' } },
+  const 줄들 = {};
+  const 고르기 = x => {
+    고른 = x;
+    Object.entries(줄들).forEach(([k, tr]) => tr.classList.toggle('sel', k === x));
+    그리기();
+  };
+  const 표 = h('table', { class: 'grid pick-rows', style: { width: '100%', fontSize: '16.5px' } },
     h('tr', null, h('th', null, 'A'), h('th', null, 'P(A)')),
     품목.map(x => {
       const 칸 = h('input', { class: 'num', style: { width: '90px' }, value: 상태.값[x] ?? '', placeholder: '?/6', 'aria-label': `P(${x})` });
       칸.addEventListener('input', () => { 상태.값[x] = 칸.value; 칸.classList.remove('ok', 'bad'); 저장(); });
+      칸.addEventListener('focus', () => 고르기(x));
       칸들[x] = 칸;
-      return h('tr', null, h('td', { class: 'l' }, 칩글(x)), h('td', null, 칸));
+      const tr = h('tr', { onClick: () => 고르기(x) }, h('td', { class: 'l' }, 칩글(x)), h('td', null, 칸));
+      줄들[x] = tr;
+      return tr;
     }));
   if (상태.확인) queueMicrotask(() => 채점(true));
 
   el.append(h('div', { class: 'split' },
     h('div', { class: 'col', style: { flex: 1.45 } },
-      h('h2', null, '🔵🟠 P(A) 와 벤 다이어그램'),
-      h('p', { class: 'lead' }, '지표를 계산하기 전에 필요한 값을 정리해요. 두 상품을 골라 벤 다이어그램 속 주문 번호를 세어 보세요.'),
-      고르기칸,
-      h('div', { class: 'panel fill', style: { padding: '6px' } }, 벤칸),
-      식칸),
+      h('h2', null, '🧾 P(A) 구하기 — 그 상품이 든 거래의 비율'),
+      식칸,
+      h('p', { class: 'lead' }, '지표를 계산하기 전에 필요한 값을 정리해요. 편의점 주문 6건에서 상품마다 몇 번 팔렸는지 세어 보세요.'),
+      영수증칸, 안내),
     h('div', { class: 'col', style: { flex: 0.75 } },
       h('div', { class: 'panel' }, h('h3', null, '📋 계산 결과 정리 — P(A)'), 표,
+        h('div', { class: 'row', style: { marginTop: '6px' } }, h('button', { class: 'btn primary', onClick: () => 채점() }, '정답 확인')), 피드백))));
+  그리기();
+}
+
+// ───────────────────────── 4. P(A∩B) 와 벤 다이어그램 ─────────────────────────
+function P교집합(el, 수명, 도구) {
+  const 상태 = 기록.get('PAB표', { 값: {}, 확인: false, A: 교집합쌍[0][0], B: 교집합쌍[0][1] });
+  const 저장 = () => 기록.set('PAB표', 상태);
+  const 벤칸 = h('div', { class: 'svgbox' });
+  // 계산식 — 카드 맨 위에 크게. 색은 벤 다이어그램과 같다(A 파랑 · B 주황 · A∩B 초록)
+  const 식칸 = h('div', { class: 'pform' });
+  const 고르기칸 = h('div', { class: 'col', style: { gap: '4px' } });
+  const 줄들 = [];
+  function 벤그리기() {
+    채우기(고르기칸,
+      h('div', { class: 'row', style: { gap: '4px' } }, h('b', { class: 'ta' }, 'A'), 품목.map(x => h('button', { class: 'chip' + (상태.A === x ? ' a' : ''), onClick: () => { if (x !== 상태.B) { 상태.A = x; 저장(); 벤그리기(); } } }, 칩글(x)))),
+      h('div', { class: 'row', style: { gap: '4px' } }, h('b', { class: 'tb' }, 'B'), 품목.map(x => h('button', { class: 'chip' + (상태.B === x ? ' b' : ''), onClick: () => { if (x !== 상태.A) { 상태.B = x; 저장(); 벤그리기(); } } }, 칩글(x)))));
+    // 'sup' 모드 — 겹친 곳(초록)과 전체 상자(굵은 테두리)를 함께 칠한다: P(A∩B) = 겹친 곳 ÷ 전체
+    채우기(벤칸, 벤(거래, 상태.A, 상태.B, { 모드: 'sup', 가림: true }));
+    채우기(식칸,
+      h('div', { class: 'pform-rule' }, '📌 P(X) = ', 분수('X 의 경우의 수', '전체 경우의 수')),
+      h('div', { class: 'pform-row' },
+        h('div', { class: 'pf a' }, h('b', null, 'P(A) ='), 분수(`${이(상태.A)} 든 거래 수`, '전체 거래 수 6')),
+        h('div', { class: 'pf b' }, h('b', null, 'P(B) ='), 분수(`${이(상태.B)} 든 거래 수`, '전체 거래 수 6')),
+        h('div', { class: 'pf ab' }, h('b', null, 'P(A∩B) ='), 분수('A, B 가 함께 든 거래 수', '전체 거래 수 6'))));
+    줄들.forEach(([a, b, tr]) => tr.classList.toggle('sel', (상태.A === a && 상태.B === b) || (상태.A === b && 상태.B === a)));
+  }
+  const 칸들 = [];
+  const 피드백 = h('div', { class: 'fb' });
+  const 정답 = ([a, b]) => 세기(거래, [a, b]) / N;
+  const 채점 = (조용히 = false) => {
+    let 맞은 = 0;
+    교집합쌍.forEach((쌍, i) => {
+      const 칸 = 칸들[i], v = String(상태.값[i] ?? '').trim();
+      칸.classList.remove('ok', 'bad');
+      if (v) { const ok = 맞는수(v, 정답(쌍)); 칸.classList.add(ok ? 'ok' : 'bad'); if (ok) 맞은++; }
+    });
+    if (!조용히) { 상태.확인 = true; 저장(); }
+    const 다 = 맞은 === 교집합쌍.length;
+    알림(피드백, 다 ? '⭕ 모두 정답! P(A∩B) 는 벤 다이어그램에서 두 원이 겹친 곳의 거래 수 ÷ 전체 거래 수예요. 겹친 곳이 비면 0 이에요. 이 값이 곧 지지도예요.' : `${맞은}/${교집합쌍.length} 정답 — 줄을 누르면 그 두 상품의 벤 다이어그램이 나와요.`, 다 ? 'ok' : 'bad');
+    if (다) 도구.완료();
+  };
+  const 표 = h('table', { class: 'grid pick-rows', style: { width: '100%', fontSize: '16px' } },
+    h('tr', null, h('th', null, 'A'), h('th', null, 'B'), h('th', null, 'P(A∩B)')),
+    교집합쌍.map(([a, b], i) => {
+      const 칸 = h('input', { class: 'num', style: { width: '76px' }, value: 상태.값[i] ?? '', placeholder: '?/6', 'aria-label': `P(${a}∩${b})` });
+      칸.addEventListener('input', () => { 상태.값[i] = 칸.value; 칸.classList.remove('ok', 'bad'); 저장(); });
+      const 보기 = () => { 상태.A = a; 상태.B = b; 저장(); 벤그리기(); };
+      칸.addEventListener('focus', 보기);
+      칸들[i] = 칸;
+      const tr = h('tr', { onClick: 보기 }, h('td', { class: 'l ta' }, 칩글(a)), h('td', { class: 'l tb' }, 칩글(b)), h('td', null, 칸));
+      줄들.push([a, b, tr]);
+      return tr;
+    }));
+  if (상태.확인) queueMicrotask(() => 채점(true));
+
+  el.append(h('div', { class: 'split' },
+    h('div', { class: 'col', style: { flex: 1.45 } },
+      h('h2', null, '🔵🟠 P(A∩B) 와 벤 다이어그램'),
+      식칸,
+      h('p', { class: 'lead' }, '두 상품을 골라 보세요. 두 원이 겹친 곳(초록)에 든 주문 번호가 A 와 B 가 함께 든 거래예요.'),
+      고르기칸,
+      h('div', { class: 'panel fill', style: { padding: '6px' } }, 벤칸)),
+    h('div', { class: 'col', style: { flex: 0.75 } },
+      h('div', { class: 'panel' }, h('h3', null, '📋 계산 결과 정리 — P(A∩B)'), 표,
         h('div', { class: 'row', style: { marginTop: '6px' } }, h('button', { class: 'btn primary', onClick: () => 채점() }, '정답 확인')), 피드백),
-      h('div', { class: 'tip small' }, '💡 왼쪽 벤 다이어그램에서 A 원 안(겹친 곳 포함)의 주문 번호 수가 A 가 든 거래 수예요.'))));
+      h('div', { class: 'tip small' }, '💡 P(A∩B) 와 P(B∩A) 는 같아요 — 겹친 곳은 A, B 의 차례와 상관없으니까요.'))));
   벤그리기();
 }
 
-// ───────────────────────── 4~6. 지지도 · 신뢰도 · 향상도 ─────────────────────────
+// ───────────────────────── 5~7. 지지도 · 신뢰도 · 향상도 ─────────────────────────
 const 목표 = { A: '삼각김밥', B: '사이다' };
 const 목표인가 = (a, b, 종류) => (a === 목표.A && b === 목표.B) || (종류 !== 'conf' && a === 목표.B && b === 목표.A);
 const 지표설정 = {
@@ -416,7 +491,8 @@ export default {
   카드: [
     { id: 'three', 제목: '세 가지 질문', 그리기: 세가지질문 },
     { id: 'table', 제목: '동시 구매표', 그리기: 동시구매표카드 },
-    { id: 'pa', 제목: 'P(A)와 벤 다이어그램', 그리기: P정리 },
+    { id: 'pa', 제목: 'P(A)', 그리기: P정리 },
+    { id: 'pab', 제목: 'P(A∩B)', 그리기: P교집합 },
     { id: 'sup', 제목: '지지도', 그리기: 지표카드('sup') },
     { id: 'conf', 제목: '신뢰도', 그리기: 지표카드('conf') },
     { id: 'lift', 제목: '향상도', 그리기: 지표카드('lift') },
