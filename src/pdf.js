@@ -9,7 +9,7 @@ import { 기록 } from './lib/store.js';
 import { 지표, 동시구매표, 규칙목록, 좋은규칙, 향상도판정, 추천, 세기, apriori단계, 집합수, 규칙수, 수글, 분수글, 맞는수, 집합글, 조합 } from './lib/assoc.js';
 import {
   편의점, 편의점40, 햄버거, 알파, 쇼핑몰, 미리적은칸, 정의빈칸, 사례, 규칙문장, 세질문,
-  정리표쌍, 판정규칙, 서술, 확인문제, 정리빈칸, 교집합쌍,
+  정리표쌍, 판정규칙, 서술, 확인문제, 정리빈칸, 정리채움, 교집합쌍,
 } from './data.js';
 import { 탭들 } from './tabs/index.js';
 import { 차시들, 차시보기 } from './sessions.js';
@@ -59,16 +59,30 @@ function 서술줄(키) {
     h('div', { class: 'p-ex' }, h('b', null, '예시 답 '), q.예시));
 }
 
-// ───────────── 1쪽 표지 ─────────────
-function 쪽1() {
-  const 목록 = 차시들.flatMap(차 => 차시보기(탭들, 차.번호).flatMap(v => v.카드.filter(c => c.id !== 'pdf').map(c => ({ 글: `${차.번호}차시 · ${v.탭.이름} · ${c.제목}`, 끝: 기록.완료됨(`${v.탭.id}/${c.id}`) }))));
+// ───────────── 표지 — 차시마다 (0 = 두 차시를 한 파일로) ─────────────
+const 차시이름 = 차시 => (차시 ? `${차시}차시` : '1·2차시');
+function 표지(차시) {
+  const 고른 = 차시 ? 차시들.filter(차 => 차.번호 === 차시) : 차시들;
+  const 목록 = 고른.flatMap(차 => 차시보기(탭들, 차.번호).flatMap(v => v.카드.filter(c => !c.마무리).map(c => ({ 글: `${차.번호}차시 · ${v.탭.이름} · ${c.제목}`, 끝: 기록.완료됨(`${v.탭.id}/${c.id}`) }))));
   const 마친 = 목록.filter(x => x.끝).length;
   const 오늘 = new Date();
+  const 개념 = [
+    ['연관 분석 (장바구니 분석)', '데이터 간의 유용한 규칙이나 패턴과 같이 일련의 연관성을 찾아내는 분석 방법'],
+    ['연관 규칙 A → B', 'if A then B — 만약 A 를 구매했다면 B 도 구매할 가능성이 높다 (A 선행, B 후행)'],
+    ['지지도 (support)', 'P(A∩B) = A 와 B 가 함께 든 거래 수 ÷ 전체 거래 수'],
+    ['신뢰도 (confidence)', 'P(B|A) = P(A∩B) ÷ P(A) = 지지도 ÷ P(A)'],
+    ['향상도 (lift)', 'P(B|A) ÷ P(B) = P(A∩B) ÷ (P(A)·P(B)) — 1 보다 크면 연관, 1 이면 독립, 1 보다 작으면 억제'],
+  ];
+  if (차시 !== 1) 개념.push(
+    ['좋은 연관 규칙', '최소 지지도를 넘고, 신뢰도가 높고, 향상도가 1 보다 큰 규칙'],
+    ['Apriori 알고리즘', '최소 지지도를 넘는 빈발 항목 집합만 남겨 계산을 줄이고 연관 규칙을 찾는 방법'],
+  );
   return 쪽(1,
     h('div', { class: 'p-cover' },
       h('div', { class: 'p-cart' }, '🛒'),
       h('h1', null, '연관 분석 모델의 개념'),
-      h('div', { class: 'p-sub' }, '연관 분석 실험실 · 학습 정리'),
+      h('div', { class: 'p-sub' }, `연관 분석 실험실 · ${차시이름(차시)} 학습 정리`),
+      h('div', { class: 'p-session' }, 고른.map(차 => `${차.번호}차시 — ${차.제목}`).join('   ·   ')),
       h('div', { class: 'p-date' }, `${오늘.getFullYear()}년 ${오늘.getMonth() + 1}월 ${오늘.getDate()}일`),
       h('div', { class: 'p-name' }, '학번 ____________   이름 ____________')),
     제목('🎯', '학습 목표'),
@@ -76,14 +90,7 @@ function 쪽1() {
     제목('📋', `활동 현황 — ${마친} / ${목록.length} 완료`),
     h('div', { class: 'p-grid2' }, 목록.map(x => h('div', { class: x.끝 ? 'p-ok' : 'p-no' }, (x.끝 ? '✔ ' : '○ ') + x.글))),
     제목('🔑', '한눈에 보는 연관 분석'),
-    표(['개념', '뜻'], [
-      ['연관 분석 (장바구니 분석)', '데이터 간의 유용한 규칙이나 패턴과 같이 일련의 연관성을 찾아내는 분석 방법'],
-      ['연관 규칙 A → B', 'if A then B — 만약 A 를 구매했다면 B 도 구매할 가능성이 높다 (A 선행, B 후행)'],
-      ['지지도 (support)', 'P(A∩B) = A 와 B 가 함께 든 거래 수 ÷ 전체 거래 수'],
-      ['신뢰도 (confidence)', 'P(B|A) = P(A∩B) ÷ P(A) = 지지도 ÷ P(A)'],
-      ['향상도 (lift)', 'P(B|A) ÷ P(B) = P(A∩B) ÷ (P(A)·P(B)) — 1 보다 크면 연관, 1 이면 독립, 1 보다 작으면 억제'],
-      ['Apriori 알고리즘', '최소 지지도를 넘는 빈발 항목 집합만 남겨 계산을 줄이고 연관 규칙을 찾는 방법'],
-    ]),
+    표(['개념', '뜻'], 개념),
     h('div', { class: 'p-tip' }, '이 문서는 「연관 분석 실험실」에서 내가 직접 한 활동 결과로 만들어졌습니다.'));
 }
 
@@ -286,19 +293,21 @@ function 쪽6() {
     서술줄('전략'));
 }
 
-// ───────────── 7쪽 확인 문제 · 핵심 정리 ─────────────
-function 쪽7() {
+// ───────────── 차시 마지막 쪽 확인 문제 · 핵심 정리 — 그 차시 것만 ─────────────
+function 정리쪽(차시) {
   const 결과 = 기록.get('퀴즈', 확인문제.map(() => null));
-  const 정 = 기록.get('정리', 정리빈칸.map(() => ''));
+  const 정 = 정리채움(기록.get('정리'));
+  const 문제 = 확인문제.map((q, i) => ({ q, i })).filter(x => x.q.차시 === 차시);
+  const 빈칸 = 정리빈칸.map((b, i) => ({ b, i })).filter(x => x.b.차시 === 차시);
   return 쪽(7,
-    제목('📝', `확인 문제 — 한 번에 맞힌 문제 ${결과.filter(x => x === true).length} / ${확인문제.length}`),
-    표(['번', '물음', '결과', '정답 · 해설'], 확인문제.map((q, i) => [
-      i + 1, q.물음,
+    제목('📝', `${차시이름(차시)} 확인 문제 — 한 번에 맞힌 문제 ${문제.filter(x => 결과[x.i] === true).length} / ${문제.length}`),
+    표(['번', '물음', '결과', '정답 · 해설'], 문제.map(({ q, i }, k) => [
+      k + 1, q.물음,
       결과[i] === true ? '⭕' : 결과[i] === false ? '🔁' : '—',
       `${'①②③④⑤'[q.답]} ${q.보기[q.답]} — ${q.해설}`])),
     h('p', { class: 'p-note' }, '⭕ 한 번에 맞힘 · 🔁 다시 풀어 맞힘 · — 풀지 않음'),
-    제목('🔑', '핵심 정리'),
-    h('ol', null, 정리빈칸.map((b, i) => h('li', null, b.앞, h('b', { class: 정[i] === b.답 ? 'p-fill' : 'p-blank' }, 정[i] === b.답 ? b.답 : `( ${b.답} )`), b.뒤))),
+    제목('🔑', `${차시이름(차시)} 핵심 정리`),
+    h('ol', null, 빈칸.map(({ b, i }) => h('li', null, b.앞, h('b', { class: 정[i] === b.답 ? 'p-fill' : 'p-blank' }, 정[i] === b.답 ? b.답 : `( ${b.답} )`), b.뒤))),
     h('p', { class: 'p-note' }, '괄호 속 낱말은 앱에서 채우지 않은 빈칸의 답이다.'));
 }
 
@@ -327,7 +336,7 @@ const PDF모양 = `
 .p-cover{text-align:center;padding:26px 0 14px;border-bottom:2px solid #e2d4f0;margin-bottom:6px}
 .p-cart{font-size:46px}
 .p-cover h1{font-size:32px;margin:8px 0 6px;color:#6a3d9a}
-.p-sub{font-size:16px;color:#5d6475}.p-date{margin-top:10px;font-size:13.5px}
+.p-sub{font-size:16px;color:#5d6475}.p-session{margin-top:6px;font-size:13.5px;color:#6a3d9a;font-weight:700}.p-date{margin-top:10px;font-size:13.5px}
 .p-name{margin-top:16px;font-size:15px;letter-spacing:1px}
 .p-essay{border:1px solid #e2d4f0;border-radius:8px;padding:5px 9px;margin:5px 0;background:#fcfaff}
 .p-q{font-weight:800;font-size:12.5px}
@@ -335,16 +344,23 @@ const PDF모양 = `
 .p-ex{font-size:11.5px;color:#4b3a63}.p-ex b{color:#6a3d9a}
 .p-fill{color:#1e8e4e}.p-blank{color:#b36b00}`;
 
-/** PDF 만들기 — 진행 알림(지금쪽, 전체쪽) 을 받아 막대를 채운다 */
-export async function PDF만들기(진행, { 미리보기 = false } = {}) {
+/** 내려받는 파일 이름 — 차시마다 (0 = 두 차시) */
+export const PDF이름 = 차시 => `연관분석_${차시 ? 차시 + '차시' : '1-2차시'}_학습정리.pdf`;
+
+/** PDF 만들기 — 진행 알림(지금쪽, 전체쪽) 을 받아 막대를 채운다. 차시 1·2 는 그 차시 쪽만, 0 은 두 차시 모두 */
+export async function PDF만들기(진행, { 미리보기 = false, 차시 = 0 } = {}) {
   const 모양 = h('style', null, PDF모양);
   const 틀 = h('div', { class: 'p-wrap' });
   document.head.append(모양);
   document.body.append(틀);
   try {
-    const 만들개 = [쪽1, 쪽2, 쪽3, 쪽4, 쪽5, 쪽6, 쪽7];
+    // 차시마다 그 차시 쪽 + 그 차시 정리 쪽. 두 차시를 한 파일로 받으면 1차시 묶음 다음에 2차시 묶음을 잇는다
+    const 묶음 = { 1: [쪽2, 쪽3, 쪽4, () => 정리쪽(1)], 2: [쪽5, 쪽6, () => 정리쪽(2)] };
+    const 만들개 = [() => 표지(차시), ...(차시 ? 묶음[차시] : [...묶음[1], ...묶음[2]])];
     쪽수 = 만들개.length;
     const 쪽들 = 만들개.map(f => f());
+    // 쪽 번호는 차시마다 쪽 수가 달라 다 만든 뒤에 매긴다
+    쪽들.forEach((p, i) => { const 칸 = p.querySelector('.p-foot span:last-child'); if (칸) 칸.textContent = `${i + 1} / ${쪽들.length}`; });
     틀.append(...쪽들);
     await Promise.all([...틀.querySelectorAll('img')].map(img => (img.complete ? null : new Promise(r => { img.onload = img.onerror = r; }))));
     if (document.fonts?.ready) await document.fonts.ready;
@@ -352,7 +368,7 @@ export async function PDF만들기(진행, { 미리보기 = false } = {}) {
     if (미리보기 === '넘침') return { 넘침 };
     const 그림들 = [];
     const 문서 = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-    문서.setProperties({ title: '연관 분석 모델의 개념 — 학습 정리', author: '연관 분석 실험실 (© 2026 티쳐무)', subject: '데이터 과학 연관 분석' });
+    문서.setProperties({ title: `연관 분석 모델의 개념 — ${차시이름(차시)} 학습 정리`, author: '연관 분석 실험실 (© 2026 티쳐무)', subject: '데이터 과학 연관 분석' });
     for (let i = 0; i < 쪽들.length; i++) {
       const 캔버스 = await html2canvas(쪽들[i], { scale: 2, backgroundColor: '#ffffff', logging: false, useCORS: true });
       if (i) 문서.addPage();
@@ -362,7 +378,7 @@ export async function PDF만들기(진행, { 미리보기 = false } = {}) {
       진행?.(i + 1, 쪽들.length);
     }
     if (미리보기) return { 그림들, 크기: 문서.output('blob').size, 넘침 };   // 점검용: 파일로 저장하지 않는다
-    문서.save('연관분석_학습정리.pdf');
+    문서.save(PDF이름(차시));
   } finally {
     틀.remove(); 모양.remove();
   }

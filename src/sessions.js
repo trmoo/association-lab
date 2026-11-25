@@ -10,13 +10,14 @@ export const 차시들 = [
     번호: 1,
     제목: '연관 분석과 세 가지 지표',
     목표: '연관 규칙을 읽고 지지도·신뢰도·향상도를 직접 계산한다',
-    범위: { open: '*', measure: '*', find: ['sheet'] },
+    범위: { open: '*', measure: '*', find: ['sheet'], wrap: ['quiz1', 'summary1', 'pdf1'] },
   },
   {
     번호: 2,
     제목: '연관 규칙 찾기와 Apriori',
     목표: '좋은 연관 규칙을 골라내고 Apriori 로 빈번 집합을 찾는다',
-    범위: { find: ['explore', 'good'], apriori: '*', wrap: '*' },
+    // 정리 탭은 차시마다 따로 — 2차시 정리 카드 id 는 나누기 전 그대로(예전 주소 #wrap/pdf 가 2차시로 열린다)
+    범위: { find: ['explore', 'good'], apriori: '*', wrap: ['quiz', 'summary', 'pdf'] },
   },
 ];
 

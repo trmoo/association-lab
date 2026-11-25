@@ -70,18 +70,18 @@ html.wide .card { max-width: 1560px; }
 .session-chip:hover { background: rgba(255,255,255,.26); }
 .session-chip:empty { display: none; }
 html.entry .subbar, html.entry .sub-acts { display: none; }
-.card.entry { flex-direction: column; justify-content: center; gap: 16px; padding: 14px 40px; max-width: 1240px; }
+.card.entry { flex-direction: column; justify-content: center; gap: 12px; padding: 10px 40px; max-width: 1240px; }
 .entry-head { text-align: center; }
 .entry-head h1 { margin: 0; font-size: 34px; color: var(--brand); line-height: 1.2; }
 .entry-head p { margin: 4px 0 0; color: var(--sub); font-size: 18px; }
 .entry-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-.entry-card { --sc: var(--brand); background: #fff; border: 2px solid var(--line); border-top: 8px solid var(--sc); border-radius: 20px; padding: 16px 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.entry-card { --sc: var(--brand); background: #fff; border: 2px solid var(--line); border-top: 8px solid var(--sc); border-radius: 20px; padding: 14px 22px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .entry-card.s2 { --sc: #1f7a8c; }
 .entry-num { align-self: flex-start; background: var(--sc); color: #fff; border-radius: 999px; padding: 3px 15px; font-weight: 900; font-size: 18px; }
 .card .entry-card h2 { font-size: 26px; color: var(--ink); }
 .entry-goal { color: var(--sub); font-size: 16px; }
 .entry-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
-.entry-list li { display: flex; flex-direction: column; background: var(--bg); border-radius: 10px; padding: 6px 12px; font-size: 14.5px; color: var(--sub); line-height: 1.35; }
+.entry-list li { display: flex; flex-direction: column; background: var(--bg); border-radius: 10px; padding: 5px 12px; font-size: 14.5px; color: var(--sub); line-height: 1.35; }
 .entry-list li b { color: var(--ink); font-size: 16px; }
 .entry-prog { display: flex; align-items: center; gap: 10px; font-size: 14.5px; color: var(--sub); white-space: nowrap; }
 .entry-prog .meter { flex: 1; }
@@ -385,6 +385,12 @@ svg.plot .rule-dot:hover { stroke: #111; stroke-width: 2.5; }
 html.tall #stage { font-size: 18px; }
 html.tall .card { padding-top: 16px; padding-bottom: 16px; }
 /* 세로로 긴 창은 무대 폭이 1120 이라 세 칸이 비좁다 — P(A)·P(B) 둘, P(A∩B) 는 한 줄 통째로 */
+/* 세로로 긴 창은 무대 폭이 1120 이라, 카드가 일곱 장인 탭(세 가지 지표)의 카드 줄이 [이어하기]·[N차시 완료] 단추와 함께 한 줄에 다 들어가지 않는다.
+   세로 자리는 넉넉하므로 카드 줄을 두 줄로 감싼다(넘쳐서 옆으로 밀리면 뒤쪽 카드가 안 보인다). */
+html.tall .subbar { height: auto; min-height: 48px; padding-top: 6px; padding-bottom: 6px; }
+html.tall .cards { flex-wrap: wrap; justify-content: center; row-gap: 6px; }
+html.tall .cards > :first-child { margin-left: 0; }
+html.tall .cards > :last-child { margin-right: 0; }
 html.tall .pform-row { grid-template-columns: 1fr 1fr; }
 html.tall .pf.ab { grid-column: 1 / -1; }
 
