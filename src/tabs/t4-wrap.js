@@ -4,7 +4,8 @@
 // 2차시 카드 id 는 차시를 나누기 전 그대로라 예전 주소(#wrap/pdf)가 2차시로 열린다.
 import { h, 채우기, 알림 } from '../lib/ui.js';
 import { 기록 } from '../lib/store.js';
-import { 확인문제, 정리빈칸, 정리낱말, 정리채움 } from '../data.js';
+import { 확인문제, 정리빈칸, 정리낱말, 정리채움, 편의점, 주문10 } from '../data.js';
+import { 영수증들 } from '../lib/views.js';
 import { 탭들 } from './index.js';
 import { 차시보기 } from '../sessions.js';
 
@@ -13,6 +14,19 @@ const 번호표 = '①②③④⑤';
 const 자리들 = (목록, 차시) => 목록.map((x, i) => (x.차시 === 차시 ? i : -1)).filter(i => i >= 0);
 
 // ───────────────────────── 1. 확인 문제 ─────────────────────────
+/** 문제 상황 — 물음만으로 자료가 보이지 않는 문제는 같은 화면 위쪽에 자료를 함께 보여 준다(앞 화면으로 돌아가지 않게).
+ *  영수증은 색칠하지 않는다 — 어느 주문에 무엇이 들었는지 세는 것은 학생 몫이다 */
+function 상황판(키) {
+  if (키 === '편의점6') return h('div', { class: 'qsit' },
+    h('div', { class: 'qsit-h' }, `📋 문제 상황 — 편의점 주문 ${편의점.거래.length}건`),
+    영수증들(편의점.거래, { 열: 6, 표시: false }));
+  if (키 === '주문10') return h('div', { class: 'qsit' },
+    h('div', { class: 'qsit-h' }, `📋 문제 상황 — 주문 ${주문10.전체}건`),
+    h('div', { class: 'qsit-stats' }, [
+      ['전체 주문', 주문10.전체, ''], ['A 가 든 주문', 주문10.A, 'a'], ['B 가 든 주문', 주문10.B, 'b'], ['A 와 B 가 함께 든 주문', 주문10.함께, 'ab'],
+    ].map(([글, n, c]) => h('div', { class: 'qsit-stat ' + c }, h('span', null, 글), h('b', null, `${n}건`)))));
+  return null;
+}
 const 퀴즈 = 차시 => function (el, 수명, 도구) {
   const 자리 = 자리들(확인문제, 차시);
   const 결과 = 기록.get('퀴즈', 확인문제.map(() => null));   // true(첫 시도 정답) / false / null(아직)
@@ -44,6 +58,7 @@ const 퀴즈 = 차시 => function (el, 수명, 도구) {
       },
     }, `${번호표[k]} ${t}`));
     채우기(본문,
+      q.상황 ? 상황판(q.상황) : null,
       h('h2', { style: { fontSize: '24px', color: 'var(--ink)' } }, `Q${번 + 1}. ${q.물음}`),
       h('div', { class: 'opts' }, 보기들),
       h('div', { class: 'row' },
