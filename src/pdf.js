@@ -12,6 +12,7 @@ import {
   정리표쌍, 판정규칙, 서술, 확인문제, 정리빈칸, 교집합쌍,
 } from './data.js';
 import { 탭들 } from './tabs/index.js';
+import { 차시들, 차시보기 } from './sessions.js';
 
 let 쪽수 = 7;
 
@@ -60,7 +61,7 @@ function 서술줄(키) {
 
 // ───────────── 1쪽 표지 ─────────────
 function 쪽1() {
-  const 목록 = 탭들.flatMap(t => t.카드.filter(c => c.id !== 'pdf').map(c => ({ 글: `${t.이름} · ${c.제목}`, 끝: 기록.완료됨(`${t.id}/${c.id}`) })));
+  const 목록 = 차시들.flatMap(차 => 차시보기(탭들, 차.번호).flatMap(v => v.카드.filter(c => c.id !== 'pdf').map(c => ({ 글: `${차.번호}차시 · ${v.탭.이름} · ${c.제목}`, 끝: 기록.완료됨(`${v.탭.id}/${c.id}`) }))));
   const 마친 = 목록.filter(x => x.끝).length;
   const 오늘 = new Date();
   return 쪽(1,

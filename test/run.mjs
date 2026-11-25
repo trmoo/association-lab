@@ -280,5 +280,36 @@ D.확인문제.forEach((q, i) => {
   확인('미래 사본 지우기', st.비상판정({ 시각: '2026-11-22T11:00:00Z', 기록: { a: 1 } }, 지금) === 'expired');
 }
 
+// ── 차시 나누기 (입장 페이지) ──
+// 탭 파일은 DOM 을 쓰므로 부르지 않고, 글자에서 탭 id 와 카드 id 를 읽어 sessions.js 와 맞대어 본다.
+{
+  const { readFileSync } = await import('node:fs');
+  const S = await import('../src/sessions.js');
+  const 목차 = readFileSync(new URL('../src/tabs/index.js', import.meta.url), 'utf8');
+  const 파일들 = [...목차.matchAll(/import 탭\d from '\.\/(t\d-[a-z]+\.js)'/g)].map(m => m[1]);
+  const 탭들 = 파일들.map(f => {
+    const 글 = readFileSync(new URL('../src/tabs/' + f, import.meta.url), 'utf8');
+    const 끝 = 글.slice(글.lastIndexOf('export default'));
+    return { id: 끝.match(/id: '([a-z]+)', 이름/)[1], 카드: [...끝.matchAll(/\{ id: '([a-z]+)', 제목/g)].map(m => ({ id: m[1] })) };
+  });
+  확인('탭 다섯을 읽었다', 탭들.map(t => t.id).join() === 'open,measure,find,apriori,wrap', 탭들.map(t => t.id).join());
+  const 차시카드 = 번 => S.차시보기(탭들, 번).flatMap(v => v.카드.map(c => `${v.탭.id}/${c.id}`));
+  const 일 = 차시카드(1), 이 = 차시카드(2);
+  const 모두 = 탭들.flatMap(t => t.카드.map(c => `${t.id}/${c.id}`));
+  확인('차시는 둘', S.차시들.length === 2 && S.차시들.map(x => x.번호).join() === '1,2');
+  확인('모든 카드가 꼭 한 차시에', 모두.every(k => (일.includes(k) ? 1 : 0) + (이.includes(k) ? 1 : 0) === 1), 모두.filter(k => !일.includes(k) && !이.includes(k)).join());
+  확인('1차시 다음에 2차시 — 원래 차례를 그대로 이어 붙인 것', [...일, ...이].join() === 모두.join());
+  확인('1차시는 생각 열기부터 실습 정리표까지', 일[0] === 'open/shop' && 일.at(-1) === 'find/sheet', `${일[0]} … ${일.at(-1)}`);
+  확인('2차시는 연관 규칙 탐색기부터 정리까지', 이[0] === 'find/explore' && 이.includes('apriori/burger') && 이.at(-1) === 'wrap/pdf', `${이[0]} … ${이.at(-1)}`);
+  확인('규칙 찾기 탭이 두 차시에 갈려 있다', S.차시보기(탭들, 1).find(v => v.탭.id === 'find').카드.map(c => c.id).join() === 'sheet'
+    && S.차시보기(탭들, 2).find(v => v.탭.id === 'find').카드.map(c => c.id).join() === 'explore,good');
+  // 주소만 보고 차시를 안다 — 예전 주소·이어하기 파일·비상 사본이 맞는 차시로 열린다
+  확인('주소 → 차시', S.차시찾기(탭들, 'open', 'shop') === 1 && S.차시찾기(탭들, 'find', 'sheet') === 1
+    && S.차시찾기(탭들, 'find', 'explore') === 2 && S.차시찾기(탭들, 'apriori', 'steps') === 2 && S.차시찾기(탭들, 'wrap', 'pdf') === 2);
+  확인('모르는 카드는 그 탭의 첫 차시로 (#find/lab → 1차시)', S.차시찾기(탭들, 'find', 'lab') === 1 && S.차시찾기(탭들, 'apriori', undefined) === 2);
+  확인('입장 페이지 주소는 차시 0', S.차시찾기(탭들, '', undefined) === 0 && S.차시찾기(탭들, 'start', undefined) === 0 && S.차시찾기(탭들, 'nope', 'x') === 0);
+  확인('차시마다 제목·목표가 있다', S.차시들.every(x => x.제목 && x.목표));
+}
+
 console.log(실패 ? `\n✗ ${실패}개 실패 · ${통과}개 통과` : `✔ 시험 ${통과}가지 모두 통과`);
 process.exit(실패 ? 1 : 0);

@@ -62,6 +62,34 @@ html.wide .card { max-width: 1560px; }
 .foot-clear:hover { background: #fde8e8; }
 .foot { height: 26px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; font-size: 12.5px; color: #857d93; background: #eee8f3; }
 
+/* ── 입장 페이지 — 차시 고르기 (main.js 가 html 에 .entry 를 붙인다) ── */
+.brand { border: 0; background: none; color: inherit; padding: 0; }
+.session-chip { border: 1.5px solid rgba(255,255,255,.55); background: rgba(255,255,255,.12); color: #fff; border-radius: 999px; padding: 4px 13px; font-size: 14px; display: flex; gap: 8px; align-items: center; white-space: nowrap; flex: none; }
+.session-chip b { font-size: 16.5px; }
+.session-chip span { opacity: .88; }
+.session-chip:hover { background: rgba(255,255,255,.26); }
+.session-chip:empty { display: none; }
+html.entry .subbar, html.entry .sub-acts { display: none; }
+.card.entry { flex-direction: column; justify-content: center; gap: 16px; padding: 14px 40px; max-width: 1240px; }
+.entry-head { text-align: center; }
+.entry-head h1 { margin: 0; font-size: 34px; color: var(--brand); line-height: 1.2; }
+.entry-head p { margin: 4px 0 0; color: var(--sub); font-size: 18px; }
+.entry-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.entry-card { --sc: var(--brand); background: #fff; border: 2px solid var(--line); border-top: 8px solid var(--sc); border-radius: 20px; padding: 16px 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.entry-card.s2 { --sc: #1f7a8c; }
+.entry-num { align-self: flex-start; background: var(--sc); color: #fff; border-radius: 999px; padding: 3px 15px; font-weight: 900; font-size: 18px; }
+.card .entry-card h2 { font-size: 26px; color: var(--ink); }
+.entry-goal { color: var(--sub); font-size: 16px; }
+.entry-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.entry-list li { display: flex; flex-direction: column; background: var(--bg); border-radius: 10px; padding: 6px 12px; font-size: 14.5px; color: var(--sub); line-height: 1.35; }
+.entry-list li b { color: var(--ink); font-size: 16px; }
+.entry-prog { display: flex; align-items: center; gap: 10px; font-size: 14.5px; color: var(--sub); white-space: nowrap; }
+.entry-prog .meter { flex: 1; }
+.entry-prog .meter > i { background: var(--sc); }
+.entry-card .btn.entry-go { font-size: 20px; padding: 11px 18px; background: var(--sc); border-color: var(--sc); color: #fff; }
+.entry-card .btn.entry-go:hover { filter: brightness(1.12); background: var(--sc); }
+.entry-tip { font-size: 15px; }
+
 /* ── 배치 ── */
 .col { display: flex; flex-direction: column; gap: 9px; min-width: 0; min-height: 0; }
 .row { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
@@ -415,3 +443,10 @@ html.phone .seg { display: flex; }
 html.phone .seg-b { flex: 1 1 auto; }
 html.phone .slider { min-width: 0; width: 100%; }
 html.phone .row.nw { flex-wrap: wrap; }
+html.phone .card.entry { justify-content: flex-start; padding: 14px 12px 18px; gap: 12px; }
+html.phone .entry-head h1 { font-size: 26px; }
+html.phone .entry-head p { font-size: 15.5px; }
+html.phone .entry-cards { grid-template-columns: 1fr; gap: 14px; }
+html.phone .entry-card { padding: 14px 14px; }
+html.phone .card .entry-card h2 { font-size: 22px; }
+html.phone .session-chip { padding: 3px 10px; font-size: 13px; }

@@ -4,6 +4,7 @@ import { h, 채우기, 알림 } from '../lib/ui.js';
 import { 기록 } from '../lib/store.js';
 import { 확인문제, 정리빈칸, 정리낱말 } from '../data.js';
 import { 탭들 } from './index.js';
+import { 차시들, 차시보기 } from '../sessions.js';
 
 const 번호 = '①②③④⑤';
 
@@ -98,7 +99,8 @@ function 핵심정리(el, 수명, 도구) {
 
 // ───────────────────────── 3. PDF 내려받기 ─────────────────────────
 function PDF(el, 수명, 도구) {
-  const 전체 = 탭들.flatMap(t => t.카드.filter(c => c.id !== 'pdf').map(c => ({ 탭: t, c, 열쇠: `${t.id}/${c.id}` })));
+  // 두 차시의 활동을 모두 센다 — 1차시 기록은 「이어하기 파일」을 열면 이어진다
+  const 전체 = 차시들.flatMap(s => 차시보기(탭들, s.번호).flatMap(v => v.카드.filter(c => c.id !== 'pdf').map(c => ({ 차시: s.번호, 탭: v.탭, c, 열쇠: `${v.탭.id}/${c.id}` }))));
   const 마친 = 전체.filter(x => 기록.완료됨(x.열쇠)).length;
   const 단추 = h('button', { class: 'btn primary', style: { fontSize: '22px', padding: '14px 26px', alignSelf: 'flex-start' } }, '📄 전체 학습 내용 PDF 내려받기');
   단추.addEventListener('click', () => globalThis.__연관완료?.(단추));
@@ -108,10 +110,10 @@ function PDF(el, 수명, 도구) {
       h('h2', null, '📋 내 활동 현황'),
       h('div', { class: 'row' }, h('span', { style: { fontSize: '30px', fontWeight: 900, color: 'var(--brand)' } }, `${마친} / ${전체.length}`), h('span', { class: 'muted' }, '활동 완료')),
       h('div', { class: 'meter' }, h('i', { style: { width: (마친 / 전체.length) * 100 + '%' } })),
-      h('div', { class: 'panel progress-list grow scroll-y' }, 전체.map(x => h('div', { class: 기록.완료됨(x.열쇠) ? 'ok' : 'no' }, (기록.완료됨(x.열쇠) ? '✔ ' : '○ ') + `${x.탭.이름} · ${x.c.제목}`)))),
+      h('div', { class: 'panel progress-list grow scroll-y' }, 전체.map(x => h('div', { class: 기록.완료됨(x.열쇠) ? 'ok' : 'no' }, (기록.완료됨(x.열쇠) ? '✔ ' : '○ ') + `${x.차시}차시 · ${x.탭.이름} · ${x.c.제목}`)))),
     h('div', { class: 'col', style: { flex: 1 } },
       h('h2', null, '📄 전체 학습 내용 PDF'),
-      h('div', { class: 'panel', html: 'A4 여러 쪽으로 정리해 드려요.<br>① 표지·학습 목표·활동 현황<br>② 생각 열기 — <b>내 장바구니 추천 실험</b>·정의·활용 사례·규칙 표현<br>③ 세 가지 지표 — <b>내 동시 구매표</b>·P(A)·지지도·신뢰도·향상도 계산<br>④ 연관 규칙 찾기 — 실험실 도전·<b>실습 정리표</b>·탐색기·좋은 규칙 판정<br>⑤ Apriori — 조합 폭발·<b>단계별 빈번 집합</b>·햄버거 가게 계산<br>⑥ 내가 쓴 서술형 답과 예시 답 · 확인 문제 결과 · 핵심 정리' }),
+      h('div', { class: 'panel', html: 'A4 여러 쪽으로 정리해 드려요.<br>① 표지·학습 목표·활동 현황 — <b>1차시와 2차시를 모두 담아요</b><br>② 생각 열기 — <b>내 장바구니 추천 실험</b>·정의·활용 사례·규칙 표현<br>③ 세 가지 지표 — <b>내 동시 구매표</b>·P(A)·지지도·신뢰도·향상도 계산<br>④ 연관 규칙 찾기 — <b>실습 정리표</b>(1차시)·탐색기·좋은 규칙 판정(2차시)<br>⑤ Apriori — 조합 폭발·<b>단계별 빈번 집합</b>·햄버거 가게 계산<br>⑥ 내가 쓴 서술형 답과 예시 답 · 확인 문제 결과 · 핵심 정리' }),
       h('div', { class: 'tip', html: '💡 아직 하지 않은 활동은 PDF 에 「아직 하지 않은 활동」으로 표시돼요. 이름·학번은 앱에 넣지 않아요 — 표지의 빈칸에 출력한 뒤 손으로 적으세요.' }),
       단추),
   );
