@@ -1,6 +1,6 @@
 /*! 연관 분석 실험실 — © 2026 티쳐무 · 모든 권리 보유 */
 // 탭 1 생각 열기 — 추천의 비밀 · 연관 분석이란? · 어디에 쓰일까? · 연관 규칙의 표현
-import { h, 채우기, 알림, 서술칸, 다듬기, 대화상자, 을 } from '../lib/ui.js';
+import { h, 채우기, 알림, 서술칸, 다듬기, 대화상자, 을, 이 } from '../lib/ui.js';
 import { 기록 } from '../lib/store.js';
 import { 추천, 세기, 수글 } from '../lib/assoc.js';
 import { 영수증들 } from '../lib/views.js';
